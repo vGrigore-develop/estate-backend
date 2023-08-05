@@ -1,10 +1,12 @@
 const express = require('express')
 const router = express.Router()
 
-const Model = require('./model')
+const authMiddleware = require('../../middleware/auth')
 
-router.post('/create', async (req, res) => {
-  const data = new Model({
+const Estate = require('./model')
+
+router.post('/create', authMiddleware, async (req, res) => {
+  const data = new Estate({
     title: req.body.title,
     price: req.body.price,
     phone: req.body.phone,
@@ -22,31 +24,31 @@ router.post('/create', async (req, res) => {
   }
 })
 
-router.get('/get', async (req, res) => {
+router.get('/get', authMiddleware, async (req, res) => {
   try {
-    const data = await Model.find()
+    const data = await Estate.find()
     res.json(data)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
 })
 
-router.get('/get/:id', async (req, res) => {
+router.get('/get/:id', authMiddleware, async (req, res) => {
   try {
-    const data = await Model.findById(req.params.id)
+    const data = await Estate.findById(req.params.id)
     res.json(data)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
 })
 
-router.patch('/update/:id', async (req, res) => {
+router.patch('/update/:id', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id
     const updatedData = req.body
     const options = { new: true }
 
-    const result = await Model.findByIdAndUpdate(id, updatedData, options)
+    const result = await Estate.findByIdAndUpdate(id, updatedData, options)
 
     res.send(result)
   } catch (error) {
@@ -54,10 +56,10 @@ router.patch('/update/:id', async (req, res) => {
   }
 })
 
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', authMiddleware, async (req, res) => {
   try {
     const id = req.params.id
-    const data = await Model.findByIdAndDelete(id)
+    const data = await Estate.findByIdAndDelete(id)
 
     res.send(`Estate ${data.name} has been deleted`)
   } catch (error) {
