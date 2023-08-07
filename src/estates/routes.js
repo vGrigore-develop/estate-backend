@@ -6,14 +6,16 @@ const authMiddleware = require('../../middleware/auth')
 const Estate = require('./model')
 
 router.post('/create', authMiddleware, async (req, res) => {
+  const { title, price, phone, rooms, location, city, source } = req.body
+
   const data = new Estate({
-    title: req.body.title,
-    price: req.body.price,
-    phone: req.body.phone,
-    rooms: req.body.rooms,
-    location: req.body.location,
-    city: req.body.city,
-    source: req.body.source,
+    title,
+    price,
+    phone,
+    rooms,
+    location,
+    city,
+    source,
   })
 
   try {
@@ -26,7 +28,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 
 router.get('/get', authMiddleware, async (req, res) => {
   try {
-    const data = await Estate.find()
+    const data = await Estate.find(req.query)
     res.json(data)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -61,7 +63,7 @@ router.delete('/delete/:id', authMiddleware, async (req, res) => {
     const id = req.params.id
     const data = await Estate.findByIdAndDelete(id)
 
-    res.send(`Estate ${data.name} has been deleted`)
+    res.send({ message: `Estate ${data.name} has been deleted` })
   } catch (error) {
     res.status(400).json({ message: error.message })
   }
