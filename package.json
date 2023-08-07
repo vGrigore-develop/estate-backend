@@ -9,12 +9,8 @@
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write .",
     "lint:check": "eslint .",
-    "lint:fix": "eslint --fix ."
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run prettier:check && npm run lint:check"
-    }
+    "lint:fix": "eslint --fix .",
+    "prepare": "husky install"
   },
   "author": "",
   "license": "ISC",
