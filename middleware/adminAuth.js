@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const logger = require('../config/logger')
 
 const config = process.env
 
@@ -14,6 +15,7 @@ const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, config.ADMIN_TOKEN_KEY)
     req.admin = decoded
   } catch (err) {
+    logger.error(err)
     return res.status(401).send({ message: 'Invalid Token' })
   }
   return next()

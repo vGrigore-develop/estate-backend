@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const router = express.Router()
 
+const logger = require('../../config/logger')
 const Admin = require('./model')
 
 router.post('/login', async (req, res) => {
@@ -10,11 +11,13 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body
 
     if (!(email && password)) {
+      logger.error('Missing email and password')
       return res.status(400).send({ message: 'All input is required' })
     }
 
     const admin = await Admin.findOne({ email })
     if (!admin) {
+      logger.error('No Admin found with the inputed email')
       return res.status(400).send({ message: 'Invalid credentials' })
     }
 
@@ -31,8 +34,11 @@ router.post('/login', async (req, res) => {
 
       return res.status(200).json(admin)
     }
+
+    logger.error('Password is wrong')
     res.status(400).send({ message: 'Invalid credentials' })
   } catch (error) {
+    logger.error(error)
     res.status(error.status).json({ message: error.message })
   }
 })

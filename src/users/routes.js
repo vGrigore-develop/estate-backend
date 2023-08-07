@@ -5,6 +5,7 @@ const router = express.Router()
 
 const adminAuthMiddleware = require('../../middleware/adminAuth')
 
+const logger = require('../../config/logger')
 const User = require('./model')
 
 router.post('/login', async (req, res) => {
@@ -12,16 +13,19 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body
 
     if (!(email && password)) {
+      logger.error('Missing email and password')
       return res.status(400).send({ message: 'All input is required' })
     }
 
     const user = await User.findOne({ email })
     if (!user) {
+      logger.error('No User found with the inputed email')
       return res.status(400).send({ message: 'Invalid credentials' })
     }
 
     if (await bcrypt.compare(password, user.password)) {
       if (user.subscriptionEndDate < Date.now()) {
+        logger.error(`User Subscription expired on ${user.subscriptionEndDate}`)
         return res.status(400).send({ message: 'Subscription expired' })
       }
 
@@ -37,8 +41,10 @@ router.post('/login', async (req, res) => {
 
       return res.status(200).json(user)
     }
+    logger.error('Password is wrong')
     res.status(400).send({ message: 'Invalid credentials' })
   } catch (error) {
+    logger.error(error)
     res.status(error.status).json({ message: error.message })
   }
 })
