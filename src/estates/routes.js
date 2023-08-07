@@ -2,10 +2,29 @@ const express = require('express')
 const router = express.Router()
 
 const authMiddleware = require('../../middleware/auth')
+const adminAuthMiddleware = require('../../middleware/adminAuth')
 
 const Estate = require('./model')
 
-router.post('/create', authMiddleware, async (req, res) => {
+router.get('/get', authMiddleware, async (req, res) => {
+  try {
+    const data = await Estate.find(req.query)
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
+router.get('/get/:id', authMiddleware, async (req, res) => {
+  try {
+    const data = await Estate.findById(req.params.id)
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
+router.post('/create', adminAuthMiddleware, async (req, res) => {
   const { title, price, phone, rooms, location, city, source } = req.body
 
   const data = new Estate({
@@ -26,25 +45,7 @@ router.post('/create', authMiddleware, async (req, res) => {
   }
 })
 
-router.get('/get', authMiddleware, async (req, res) => {
-  try {
-    const data = await Estate.find(req.query)
-    res.json(data)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-})
-
-router.get('/get/:id', authMiddleware, async (req, res) => {
-  try {
-    const data = await Estate.findById(req.params.id)
-    res.json(data)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-})
-
-router.patch('/update/:id', authMiddleware, async (req, res) => {
+router.patch('/update/:id', adminAuthMiddleware, async (req, res) => {
   try {
     const id = req.params.id
     const updatedData = req.body
@@ -58,7 +59,7 @@ router.patch('/update/:id', authMiddleware, async (req, res) => {
   }
 })
 
-router.delete('/delete/:id', authMiddleware, async (req, res) => {
+router.delete('/delete/:id', adminAuthMiddleware, async (req, res) => {
   try {
     const id = req.params.id
     const data = await Estate.findByIdAndDelete(id)

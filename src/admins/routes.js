@@ -3,9 +3,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const router = express.Router()
 
-const adminAuthMiddleware = require('../../middleware/adminAuth')
-
-const User = require('./model')
+const Admin = require('./model')
 
 router.post('/login', async (req, res) => {
   try {
@@ -15,27 +13,23 @@ router.post('/login', async (req, res) => {
       return res.status(400).send({ message: 'All input is required' })
     }
 
-    const user = await User.findOne({ email })
-    if (!user) {
+    const admin = await Admin.findOne({ email })
+    if (!admin) {
       return res.status(400).send({ message: 'Invalid credentials' })
     }
 
-    if (await bcrypt.compare(password, user.password)) {
-      if (user.subscriptionEndDate < Date.now()) {
-        return res.status(400).send({ message: 'Subscription expired' })
-      }
-
+    if (await bcrypt.compare(password, admin.password)) {
       const token = jwt.sign(
-        { user_id: user._id, email },
-        process.env.TOKEN_KEY,
+        { admin_id: admin._id, email },
+        process.env.ADMIN_TOKEN_KEY,
         {
           expiresIn: '2h',
         }
       )
 
-      user.token = token
+      admin.token = token
 
-      return res.status(200).json(user)
+      return res.status(200).json(admin)
     }
     res.status(400).send({ message: 'Invalid credentials' })
   } catch (error) {
@@ -43,37 +37,36 @@ router.post('/login', async (req, res) => {
   }
 })
 
-router.post('/register', adminAuthMiddleware, async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { email, password } = req.body
 
-    if (!(email && password && name)) {
+    if (!(email && password)) {
       return res.status(400).send({ message: 'All input is required' })
     }
 
-    const oldUser = await User.findOne({ email })
+    const oldAdmin = await Admin.findOne({ email })
 
-    if (oldUser) {
-      return res.status(409).send({ message: 'User Already Exists.' })
+    if (oldAdmin) {
+      return res.status(409).send({ message: 'Admin Already Exists.' })
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10)
 
-    const user = await User.create({
-      name,
+    const admin = await Admin.create({
       email: email.toLowerCase(),
       password: encryptedPassword,
     })
     const token = jwt.sign(
-      { user_id: user._id, email },
-      process.env.TOKEN_KEY,
+      { admin_id: admin._id, email },
+      process.env.ADMIN_TOKEN_KEY,
       {
         expiresIn: '2h',
       }
     )
-    user.token = token
+    admin.token = token
 
-    res.status(201).json(user)
+    res.status(201).json(admin)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
