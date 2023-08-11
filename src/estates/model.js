@@ -29,9 +29,9 @@ const dataSchema = new mongoose.Schema(
       required: true,
       type: String,
     },
-    flagCount: {
-      type: Number,
-      default: 0,
+    flags: {
+      type: Array,
+      default: [],
     },
     favorites: {
       type: Array,
