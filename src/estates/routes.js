@@ -7,9 +7,21 @@ const adminAuthMiddleware = require('../../middleware/adminAuth')
 const Estate = require('./model')
 
 router.get('/get', authMiddleware, async (req, res) => {
+  const { pageSize, pageNo, ...searchParams } = req.query
   try {
-    const data = await Estate.find(req.query)
-    res.json(data)
+    const estates = await Estate.find(searchParams)
+      .limit(pageSize * 1)
+      .skip((pageNo - 1) * pageSize)
+      .sort({ updatedAt: -1 })
+    const count = await Estate.countDocuments()
+
+    res.status(200).json({
+      estates,
+      pagination: {
+        totalPages: Math.ceil(count / pageSize),
+        currentPage: pageNo,
+      },
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
@@ -17,8 +29,10 @@ router.get('/get', authMiddleware, async (req, res) => {
 
 router.get('/get/:id', authMiddleware, async (req, res) => {
   try {
-    const data = await Estate.findById(req.params.id)
-    res.json(data)
+    const estates = await Estate.findById(req.params.id)
+    res.json({
+      estates,
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
