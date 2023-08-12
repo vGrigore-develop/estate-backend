@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 
 require('dotenv').config()
 require('../config/database').connect()
@@ -8,6 +9,8 @@ const usersRoutes = require('./users/routes')
 const adminsRoutes = require('./admins/routes')
 
 const app = express()
+
+app.use(cors())
 
 app.use(express.json())
 app.use('/api/estates', estatesRoutes)
