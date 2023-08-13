@@ -52,6 +52,20 @@ router.post('/favorite/:id', authMiddleware, async (req, res) => {
   }
 })
 
+router.delete('/favorite/:id', authMiddleware, async (req, res) => {
+  const user_id = req.user.user_id
+
+  try {
+    const updateResponse = await Estate.updateOne(
+      { _id: req.params.id },
+      { $pull: { favorites: user_id } }
+    )
+    res.status(200).json({ updateResponse })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+})
+
 router.post('/flag/:id', authMiddleware, async (req, res) => {
   const user_id = req.user.user_id
 
