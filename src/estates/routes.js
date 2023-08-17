@@ -19,7 +19,7 @@ router.get('/get', authMiddleware, async (req, res) => {
     const estates = await Estate.find(searchParams)
       .limit(pageSize * 1)
       .skip((pageNo - 1) * pageSize)
-      .sort(sortQuery);
+      .sort(sortQuery)
     const count = await Estate.countDocuments()
 
     logger.info(
