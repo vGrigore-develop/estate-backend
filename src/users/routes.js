@@ -9,9 +9,8 @@ const logger = require('../../config/logger')
 const User = require('./model')
 
 router.post('/login', async (req, res) => {
+  const { email, password } = req.body
   try {
-    const { email, password } = req.body
-
     if (!(email && password)) {
       logger.error('Missing email and password', { module: 'UserLogin' })
       return res.status(400).send({ message: 'All input is required' })
@@ -64,9 +63,8 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/register', adminAuthMiddleware, async (req, res) => {
+  const { name, email, password } = req.body
   try {
-    const { name, email, password } = req.body
-
     if (!(email && password && name)) {
       logger.error('Missing name, email, or password during registration', {
         module: 'UserRegistration',

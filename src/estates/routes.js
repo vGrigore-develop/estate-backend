@@ -153,8 +153,8 @@ router.post('/create', adminAuthMiddleware, async (req, res) => {
 })
 
 router.patch('/update/:id', adminAuthMiddleware, async (req, res) => {
+  const id = req.params.id
   try {
-    const id = req.params.id
     const updatedData = req.body
     const options = { new: true }
 
@@ -173,8 +173,8 @@ router.patch('/update/:id', adminAuthMiddleware, async (req, res) => {
 })
 
 router.delete('/delete/:id', adminAuthMiddleware, async (req, res) => {
+  const id = req.params.id
   try {
-    const id = req.params.id
     const data = await Estate.findByIdAndDelete(id)
 
     logger.info(`Admin deleted estate with ID: ${id}`, {
