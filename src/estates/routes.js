@@ -8,12 +8,18 @@ const adminAuthMiddleware = require('../../middleware/adminAuth')
 const Estate = require('./model')
 
 router.get('/get', authMiddleware, async (req, res) => {
-  const { pageSize, pageNo, ...searchParams } = req.query
+  const { pageSize, pageNo, sortField, sortOrder, ...searchParams } = req.query
+
+  let sortQuery = {}
+  if (sortField) {
+    sortQuery[sortField] = sortOrder === 'asc' ? 1 : -1
+  }
+
   try {
     const estates = await Estate.find(searchParams)
       .limit(pageSize * 1)
       .skip((pageNo - 1) * pageSize)
-      .sort({ updatedAt: -1 })
+      .sort(sortQuery);
     const count = await Estate.countDocuments()
 
     logger.info(
