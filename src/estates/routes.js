@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
+const logger = require('../../config/logger')
 const authMiddleware = require('../../middleware/auth')
 const adminAuthMiddleware = require('../../middleware/adminAuth')
 
@@ -15,6 +16,11 @@ router.get('/get', authMiddleware, async (req, res) => {
       .sort({ updatedAt: -1 })
     const count = await Estate.countDocuments()
 
+    logger.info(
+      `User fetched estates with params: ${JSON.stringify(searchParams)}`,
+      { module: 'EstateListing' }
+    )
+
     res.status(200).json({
       estates,
       pagination: {
@@ -23,6 +29,12 @@ router.get('/get', authMiddleware, async (req, res) => {
       },
     })
   } catch (error) {
+    logger.error(
+      `Error fetching estates with params: ${JSON.stringify(searchParams)} - ${
+        error.message
+      }`,
+      { module: 'EstateListing' }
+    )
     res.status(500).json({ message: error.message })
   }
 })
@@ -30,10 +42,18 @@ router.get('/get', authMiddleware, async (req, res) => {
 router.get('/get/:id', authMiddleware, async (req, res) => {
   try {
     const estates = await Estate.findById(req.params.id)
+
+    logger.info(`Fetching estate with ID: ${req.params.id}`, {
+      module: 'EstateRetrievalByID',
+    })
     res.json({
       estates,
     })
   } catch (error) {
+    logger.error(
+      `Error fetching estate with ID: ${req.params.id} - ${error.message}`,
+      { module: 'EstateRetrievalByID' }
+    )
     res.status(500).json({ message: error.message })
   }
 })
@@ -46,8 +66,16 @@ router.post('/favorite/:id', authMiddleware, async (req, res) => {
       { _id: req.params.id },
       { $addToSet: { favorites: user_id } }
     )
+
+    logger.info(`User ${user_id} added estate ${req.params.id} to favorites`, {
+      module: 'EstateFavorites',
+    })
     res.status(200).json({ updateResponse })
   } catch (error) {
+    logger.error(
+      `Error adding favorite for user ${user_id} and estate ${req.params.id}: ${error.message}`,
+      { module: 'EstateFavorites' }
+    )
     res.status(500).json({ message: error.message })
   }
 })
@@ -60,8 +88,17 @@ router.delete('/favorite/:id', authMiddleware, async (req, res) => {
       { _id: req.params.id },
       { $pull: { favorites: user_id } }
     )
+
+    logger.info(
+      `User ${user_id} removed estate ${req.params.id} from favorites`,
+      { module: 'EstateFavorites' }
+    )
     res.status(200).json({ updateResponse })
   } catch (error) {
+    logger.error(
+      `Error removing favorite for user ${user_id} and estate ${req.params.id}: ${error.message}`,
+      { module: 'EstateFavorites' }
+    )
     res.status(500).json({ message: error.message })
   }
 })
@@ -74,8 +111,15 @@ router.post('/flag/:id', authMiddleware, async (req, res) => {
       { _id: req.params.id },
       { $addToSet: { flags: user_id } }
     )
+    logger.info(`User ${user_id} flagged estate ${req.params.id}`, {
+      module: 'EstateFlagging',
+    })
     res.status(200).json({ updateResponse })
   } catch (error) {
+    logger.error(
+      `Error flagging estate ${req.params.id} by user ${user_id}: ${error.message}`,
+      { module: 'EstateFlagging' }
+    )
     res.status(500).json({ message: error.message })
   }
 })
@@ -95,8 +139,15 @@ router.post('/create', adminAuthMiddleware, async (req, res) => {
 
   try {
     const dataToSave = await data.save()
+    logger.info(`Admin created new estate with title: ${title}`, {
+      module: 'EstateCreation',
+    })
     res.status(200).json(dataToSave)
   } catch (error) {
+    logger.error(
+      `Error creating estate with title: ${title} - ${error.message}`,
+      { module: 'EstateCreation' }
+    )
     res.status(400).json({ message: error.message })
   }
 })
@@ -109,8 +160,14 @@ router.patch('/update/:id', adminAuthMiddleware, async (req, res) => {
 
     const result = await Estate.findByIdAndUpdate(id, updatedData, options)
 
+    logger.info(`Admin updated estate with ID: ${id}`, {
+      module: 'EstateUpdate',
+    })
     res.send(result)
   } catch (error) {
+    logger.error(`Error updating estate with ID: ${id} - ${error.message}`, {
+      module: 'EstateUpdate',
+    })
     res.status(500).json({ message: error.message })
   }
 })
@@ -120,8 +177,14 @@ router.delete('/delete/:id', adminAuthMiddleware, async (req, res) => {
     const id = req.params.id
     const data = await Estate.findByIdAndDelete(id)
 
+    logger.info(`Admin deleted estate with ID: ${id}`, {
+      module: 'EstateDeletion',
+    })
     res.send({ message: `Estate ${data.name} has been deleted` })
   } catch (error) {
+    logger.error(`Error deleting estate with ID: ${id} - ${error.message}`, {
+      module: 'EstateDeletion',
+    })
     res.status(400).json({ message: error.message })
   }
 })

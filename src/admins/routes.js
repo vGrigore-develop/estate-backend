@@ -11,13 +11,17 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body
 
     if (!(email && password)) {
-      logger.error('Missing email and password')
+      logger.warn('Login attempt with missing email or password', {
+        module: 'AdminLogin',
+      })
       return res.status(400).send({ message: 'All input is required' })
     }
 
     const admin = await Admin.findOne({ email })
     if (!admin) {
-      logger.error('No Admin found with the inputed email')
+      logger.warn(`Login attempt with non-existent email: ${email}`, {
+        module: 'AdminLogin',
+      })
       return res.status(400).send({ message: 'Invalid credentials' })
     }
 
@@ -32,14 +36,21 @@ router.post('/login', async (req, res) => {
 
       admin.token = token
 
+      logger.info(`Admin ${email} logged in successfully`, {
+        module: 'AdminLogin',
+      })
       return res.status(200).json(admin)
     }
 
-    logger.error('Password is wrong')
+    logger.warn(`Incorrect password attempt for email: ${email}`, {
+      module: 'AdminLogin',
+    })
     res.status(400).send({ message: 'Invalid credentials' })
   } catch (error) {
-    logger.error(error)
-    res.status(error.status).json({ message: error.message })
+    logger.error(`Admin login error: ${error.message}`, {
+      module: 'AdminLogin',
+    })
+    res.status(error.status || 500).json({ message: error.message })
   }
 })
 
@@ -48,12 +59,18 @@ router.post('/register', async (req, res) => {
     const { email, password } = req.body
 
     if (!(email && password)) {
+      logger.warn('Registration attempt with missing email or password', {
+        module: 'AdminRegistration',
+      })
       return res.status(400).send({ message: 'All input is required' })
     }
 
     const oldAdmin = await Admin.findOne({ email })
 
     if (oldAdmin) {
+      logger.warn(`Registration attempt with existing email: ${email}`, {
+        module: 'AdminRegistration',
+      })
       return res.status(409).send({ message: 'Admin Already Exists.' })
     }
 
@@ -72,8 +89,14 @@ router.post('/register', async (req, res) => {
     )
     admin.token = token
 
+    logger.info(`Admin ${email} registered successfully`, {
+      module: 'AdminRegistration',
+    })
     res.status(201).json(admin)
   } catch (error) {
+    logger.error(`Admin registration error: ${error.message}`, {
+      module: 'AdminRegistration',
+    })
     res.status(500).json({ message: error.message })
   }
 })
